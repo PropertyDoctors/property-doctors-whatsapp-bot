@@ -1,50 +1,63 @@
-const { Client, LocalAuth } = require("whatsapp-web.js");
+const { default: makeWASocket, useMultiFileAuthState } = require("@whiskeysockets/baileys");
 const qrcode = require("qrcode-terminal");
 const axios = require("axios");
 
-const client = new Client({
-  authStrategy: new LocalAuth(),
-  puppeteer: {
-    executablePath: "/opt/render/project/.cache/puppeteer/chrome/linux-*/chrome-linux64/chrome",
-    args: ["--no-sandbox", "--disable-setuid-sandbox"]
-  }
-});
+async function startBot() {
 
-client.on("qr", (qr) => {
-  console.log("Scan the QR code below with WhatsApp:");
-  qrcode.generate(qr, { small: true });
-});
+  const { state, saveCreds } = await useMultiFileAuthState("auth");
 
-client.on("ready", () => {
-  console.log("✅ WhatsApp Bot Ready");
-});
+  const sock = makeWASocket({
+    auth: state
+  });
 
-client.on("message", async (msg) => {
+  sock.ev.on("creds.update", saveCreds);
 
-  if (msg.type !== "chat") return;
-  try {
-    const phone = msg.from.replace("@c.us", "");
-    const message = msg.body;
+  sock.ev.on("connection.update", ({ qr, connection }) => {
 
-    console.log("Incoming message:", phone, message);
-
-    const response = await axios.post(
-      "https://property-doctors-crm.vercel.app/api/whatsapp/incoming",
-      {
-        phone: phone,
-        message: message,
-      }
-    );
-
-    const reply = response.data.reply;
-
-    if (reply) {
-      await client.sendMessage(msg.from, reply);
+    if (qr) {
+      console.log("Scan this QR with WhatsApp:");
+      qrcode.generate(qr, { small: true });
     }
 
-  } catch (error) {
-    console.error("Bot error:", error.message);
-  }
-});
+    if (connection === "open") {
+      console.log("✅ WhatsApp Bot Ready");
+    }
 
-client.initialize();
+  });
+
+  sock.ev.on("messages.upsert", async ({ messages }) => {
+
+    const msg = messages[0];
+
+    if (!msg.message || msg.key.fromMe) return;
+
+    const phone = msg.key.remoteJid.replace("@s.whatsapp.net", "");
+    const message = msg.message.conversation || "";
+
+    console.log("Incoming:", phone, message);
+
+    try {
+
+      const response = await axios.post(
+        "https://property-doctors-crm.vercel.app/api/whatsapp/incoming",
+        {
+          phone: phone,
+          message: message
+        }
+      );
+
+      const reply = response.data.reply;
+
+      if (reply) {
+        await sock.sendMessage(msg.key.remoteJid, { text: reply });
+      }
+
+    } catch (err) {
+      console.log("API error:", err.message);
+    }
+
+  });
+
+}
+
+startBot();
