@@ -19,6 +19,8 @@ client.on("ready", () => {
 });
 
 client.on("message", async (msg) => {
+
+  if (msg.type !== "chat") return;
   try {
     const phone = msg.from.replace("@c.us", "");
     const message = msg.body;
