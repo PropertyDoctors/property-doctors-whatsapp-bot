@@ -5,7 +5,7 @@ const express = require("express")
 
 async function startBot() {
 
-const { state, saveCreds } = await useMultiFileAuthState("auth_info")
+const { state, saveCreds } = await useMultiFileAuthState("session_property_doctors")
 
 const sock = makeWASocket({
 auth: state,
