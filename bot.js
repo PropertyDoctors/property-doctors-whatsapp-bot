@@ -7,39 +7,42 @@ async function startBot() {
 const { state, saveCreds } = await useMultiFileAuthState("auth")
 
 const sock = makeWASocket({
-auth: state
+auth: state,
+browser: ["PropertyDoctors CRM", "Chrome", "1.0"]
 })
 
 sock.ev.on("creds.update", saveCreds)
 
 sock.ev.on("connection.update", (update) => {
 
-    const { connection, lastDisconnect, qr } = update;
+    const { connection, lastDisconnect, qr } = update
 
     if (qr) {
-        console.log("Scan this QR with WhatsApp:");
-        qrcode.generate(qr, { small: true });
+        console.log("=================================")
+        console.log("SCAN THIS QR WITH WHATSAPP")
+        console.log("=================================")
+        qrcode.generate(qr, { small: true })
     }
 
     if (connection === "open") {
-        console.log("✅ WhatsApp Bot Ready");
+        console.log("✅ WhatsApp Bot Ready")
     }
 
     if (connection === "close") {
 
-    const shouldReconnect =
-        (lastDisconnect?.error)?.output?.statusCode !== DisconnectReason.loggedOut
+        const shouldReconnect =
+            (lastDisconnect?.error)?.output?.statusCode !== DisconnectReason.loggedOut
 
-    console.log("connection closed")
+        console.log("connection closed")
 
-    if (shouldReconnect) {
-        console.log("reconnecting...")
-        startBot()
+        if (shouldReconnect) {
+            console.log("reconnecting...")
+            startBot()
+        }
+
     }
 
-}
-
-});
+})
 
 sock.ev.on("messages.upsert", async ({ messages }) => {
 
