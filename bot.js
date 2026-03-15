@@ -9,9 +9,10 @@ const { state, saveCreds } = await useMultiFileAuthState("auth_info")
 
 const sock = makeWASocket({
 auth: state,
-browser: ["Ubuntu", "Chrome", "20.0.04"],
+browser: ["PropertyDoctors CRM", "Chrome", "1.0"],
 syncFullHistory: false,
-markOnlineOnConnect: true
+markOnlineOnConnect: true,
+printQRInTerminal: true
 })
 
 sock.ev.on("creds.update", saveCreds)
