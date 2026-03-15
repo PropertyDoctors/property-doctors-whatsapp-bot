@@ -15,7 +15,7 @@ markOnlineOnConnect: true
 
 sock.ev.on("creds.update", saveCreds)
 
-sock.ev.on("connection.update", (update) => {
+console.log("Connection update:", update)
 
     const { connection, lastDisconnect, qr } = update
 
