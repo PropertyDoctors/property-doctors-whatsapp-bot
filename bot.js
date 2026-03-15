@@ -4,7 +4,7 @@ const axios = require("axios")
 
 async function startBot() {
 
-const { state, saveCreds } = await useMultiFileAuthState("./auth")
+const { state, saveCreds } = await useMultiFileAuthState("auth_info")
 
 const sock = makeWASocket({
 auth: state,
