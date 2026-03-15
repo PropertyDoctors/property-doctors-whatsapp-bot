@@ -1,3 +1,4 @@
+```javascript
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require("@whiskeysockets/baileys")
 const qrcode = require("qrcode-terminal")
 const axios = require("axios")
@@ -12,10 +13,25 @@ auth: state,
 browser: ["PropertyDoctors CRM", "Chrome", "1.0"],
 syncFullHistory: false,
 markOnlineOnConnect: true,
-printQRInTerminal: true
+generateHighQualityLinkPreview: true
 })
 
 sock.ev.on("creds.update", saveCreds)
+
+/* GENERATE PAIRING CODE IF NOT REGISTERED */
+
+if (!sock.authState.creds.registered) {
+
+const phoneNumber = "919915828385" // replace with your whatsapp number with country code
+
+const code = await sock.requestPairingCode(phoneNumber)
+
+console.log("====================================")
+console.log("PAIRING CODE:", code)
+console.log("ENTER THIS CODE IN WHATSAPP")
+console.log("====================================")
+
+}
 
 /* CONNECTION EVENTS */
 
@@ -104,3 +120,4 @@ res.send("WhatsApp bot running")
 app.listen(process.env.PORT || 3000, ()=>{
 console.log("Server running")
 })
+```
