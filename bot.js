@@ -1,6 +1,7 @@
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require("@whiskeysockets/baileys")
 const qrcode = require("qrcode-terminal")
 const axios = require("axios")
+const express = require("express")
 
 async function startBot() {
 
@@ -15,36 +16,42 @@ markOnlineOnConnect: true
 
 sock.ev.on("creds.update", saveCreds)
 
+/* CONNECTION EVENTS */
+
+sock.ev.on("connection.update", (update) => {
+
 console.log("Connection update:", update)
 
-    const { connection, lastDisconnect, qr } = update
+const { connection, lastDisconnect, qr } = update
 
-    if (qr) {
+if (qr) {
 console.log("================================================")
 console.log("SCAN THIS QR WITH WHATSAPP BUSINESS")
 console.log("================================================")
 qrcode.generate(qr, { small: true })
 }
 
-    if (connection === "open") {
-        console.log("✅ WhatsApp Bot Ready")
-    }
+if (connection === "open") {
+console.log("✅ WhatsApp Bot Ready")
+}
 
-    if (connection === "close") {
+if (connection === "close") {
 
-        const shouldReconnect =
-            (lastDisconnect?.error)?.output?.statusCode !== DisconnectReason.loggedOut
+const shouldReconnect =
+(lastDisconnect?.error)?.output?.statusCode !== DisconnectReason.loggedOut
 
-        console.log("connection closed")
+console.log("connection closed")
 
-        if (shouldReconnect) {
-            console.log("reconnecting...")
-            startBot()
-        }
+if (shouldReconnect) {
+console.log("reconnecting...")
+startBot()
+}
 
-    }
+}
 
 })
+
+/* MESSAGE EVENTS */
 
 sock.ev.on("messages.upsert", async ({ messages }) => {
 
@@ -87,7 +94,6 @@ startBot()
 
 /* KEEP RENDER SERVICE ALIVE */
 
-const express = require("express")
 const app = express()
 
 app.get("/", (req,res)=>{
